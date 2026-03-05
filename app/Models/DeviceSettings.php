@@ -14,12 +14,14 @@ class DeviceSettings extends Model
         'temp1_threshold',
         'temp2_threshold',
         'hysteresis',
+        'interval_record',
     ];
 
     protected $casts = [
         'temp1_threshold' => 'float',
         'temp2_threshold' => 'float',
         'hysteresis' => 'float',
+        'interval_record'=> 'int',
     ];
 
 

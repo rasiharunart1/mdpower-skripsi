@@ -25,6 +25,7 @@ class DeviceSettingController extends Controller
             'temp1_threshold' => 'required|numeric',
             'temp2_threshold' => 'required|numeric',
             'hysteresis' => 'required|numeric',
+            'interval_record'=> 'required|numeric',
         ]);
 
         $user = Auth::user();
@@ -35,6 +36,8 @@ class DeviceSettingController extends Controller
             'temp1_threshold' => (float)$request->temp1_threshold,
             'temp2_threshold' => (float)$request->temp2_threshold,
             'hysteresis' => (float)$request->hysteresis,
+            
+            'interval_record' => (int)$request->interval_record,
         ];
 
         $settings->update($data);

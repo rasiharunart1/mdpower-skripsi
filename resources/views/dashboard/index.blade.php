@@ -625,7 +625,7 @@
 @push('scripts')
 <script>
     // Configuration
-    const UPDATE_INTERVAL = 2000; // 2 detik
+    const UPDATE_INTERVAL = 1000; // 2 detik
     const MAX_CONSECUTIVE_ERRORS = 3;
     const RETRY_DELAY = 10000; // 10 detik
 

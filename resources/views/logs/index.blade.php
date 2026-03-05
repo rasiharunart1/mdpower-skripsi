@@ -54,9 +54,17 @@
                         <a href="{{ route('logs.export', request()->all()) }}" class="btn btn-success mr-2">
                             <i class="fas fa-file-excel"></i> Export Excel
                         </a>
+                        <a href="{{ route('logs.exportAll', $deviceId) }}" class="btn btn-warning mr-2">
+                            <i class="fas fa-file-excel"></i> Export All Data
+                        </a>
                         <button type="button" class="btn btn-danger" id="delete-logs-btn">
                             <i class="fas fa-trash"></i> Hapus Data
                         </button>
+                        
+                        <button type="button" class="btn btn-danger" id="delete-logs-all-btn">
+                            <i class="fas fa-trash"></i> Reset All Log
+                        </button>
+                        
                         <a href="{{ route('logs.index') }}" class="btn btn-secondary">
                             <i class="fas fa-redo"></i> Reset Filter
                         </a>
@@ -233,63 +241,94 @@
 @endsection
 
 @push('scripts')
-    <script>
-        $(document).ready(function() {
-            $('#delete-logs-btn').click(function() {
-                const startDate = $('#start_date').val();
-                const endDate = $('#end_date').val();
+   <script>
+$(document).ready(function() {
 
-                let confirmMessage = 'Apakah Anda yakin ingin menghapus data log';
-                if (startDate || endDate) {
-                    confirmMessage += ' untuk periode yang dipilih';
-                } else {
-                    confirmMessage += ' SEMUA';
-                }
-                confirmMessage += '? Tindakan ini tidak dapat dibatalkan!';
+    // DELETE FILTERED LOG
+    $('#delete-logs-btn').click(function() {
 
-                if (!confirm(confirmMessage)) return;
+        const startDate = $('#start_date').val();
+        const endDate = $('#end_date').val();
 
-                $.ajax({
-                    url: '{{ route('logs.destroy') }}',
-                    type: 'DELETE',
-                    data: {
-                        start_date: startDate,
-                        end_date: endDate,
-                        _token: '{{ csrf_token() }}'
-                    },
-                    beforeSend: function() {
-                        $('#delete-logs-btn').prop('disabled', true).html(
-                            '<i class="fas fa-spinner fa-spin"></i> Menghapus...');
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            alert(response.message);
-                            const currentParams = new URLSearchParams(window.location.search);
-                            window.location.href = '{{ route('logs.index') }}?' + currentParams
-                                .toString();
-                        } else {
-                            alert('Error: ' + response.message);
-                        }
-                    },
-                    error: function(xhr) {
-                        let message = 'Gagal menghapus data';
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            message = xhr.responseJSON.message;
-                        }
-                        alert('Error: ' + message);
-                        console.error('Delete error:', xhr);
-                    },
-                    complete: function() {
-                        $('#delete-logs-btn').prop('disabled', false).html(
-                            '<i class="fas fa-trash"></i> Hapus Data');
-                    }
-                });
-            });
+        let confirmMessage = 'Apakah Anda yakin ingin menghapus data log';
+        if (startDate || endDate) {
+            confirmMessage += ' untuk periode yang dipilih';
+        } else {
+            confirmMessage += ' SEMUA';
+        }
+        confirmMessage += '? Tindakan ini tidak dapat dibatalkan!';
 
-            // Auto dismiss alerts after 5 seconds
-            setTimeout(function() {
-                $('.alert').fadeOut('slow');
-            }, 5000);
+        if (!confirm(confirmMessage)) return;
+
+        $.ajax({
+            url: '{{ route('logs.destroy') }}',
+            type: 'DELETE',
+            data: {
+                start_date: startDate,
+                end_date: endDate,
+                _token: '{{ csrf_token() }}'
+            },
+            beforeSend: function() {
+                $('#delete-logs-btn')
+                    .prop('disabled', true)
+                    .html('<i class="fas fa-spinner fa-spin"></i> Menghapus...');
+            },
+            success: function(response) {
+                alert(response.message);
+                location.reload();
+            },
+            error: function(xhr) {
+                alert('Gagal menghapus data');
+                console.error(xhr);
+            },
+            complete: function() {
+                $('#delete-logs-btn')
+                    .prop('disabled', false)
+                    .html('<i class="fas fa-trash"></i> Hapus Data');
+            }
         });
-    </script>
+    });
+
+
+    // DELETE ALL LOG
+    $('#delete-logs-all-btn').click(function() {
+
+        if (!confirm('Yakin ingin menghapus SEMUA data log? Ini tidak bisa dibatalkan!'))
+            return;
+
+        $.ajax({
+            url: '{{ route('logs.destroyAll') }}',
+            type: 'DELETE',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            beforeSend: function() {
+                $('#delete-logs-all-btn')
+                    .prop('disabled', true)
+                    .html('<i class="fas fa-spinner fa-spin"></i> Menghapus Semua...');
+            },
+            success: function(response) {
+                alert(response.message);
+                location.reload();
+            },
+            error: function(xhr) {
+                alert('Gagal menghapus semua data');
+                console.error(xhr);
+            },
+            complete: function() {
+                $('#delete-logs-all-btn')
+                    .prop('disabled', false)
+                    .html('<i class="fas fa-trash"></i> Reset All Log');
+            }
+        });
+    });
+
+
+    // AUTO DISMISS ALERT
+    setTimeout(function() {
+        $('.alert').fadeOut('slow');
+    }, 5000);
+
+});
+</script>
 @endpush

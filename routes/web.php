@@ -24,7 +24,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/logs', [LogsController::class, 'index'])->name('logs.index');
     Route::get('/logs/export', [LogsController::class, 'export'])->name('logs.export');
+    Route::get('logs/export-all/{device}', [LogsController::class, 'exportAll'])->name('logs.exportAll');
     Route::delete('/logs', [LogsController::class, 'destroy'])->name('logs.destroy');
+    Route::delete('/logs/destroy-all', [LogsController::class, 'destroyAll'])->name('logs.destroyAll');
     
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

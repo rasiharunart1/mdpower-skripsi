@@ -12,6 +12,20 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class LogsController extends Controller
 {
+    public function destroyAll(){
+      $device = Device::where('user_id', auth()->id())->first();
+      if(!$device){
+          return response()->json([
+              'success'=> false,
+              'message'=>'Device tidak ditemukan']);
+      }
+      
+      SensorData::where('device_id', $device->id)->delete();
+      
+      return response()->json([
+          'success'=>true,
+          'message'=>'berhasil menghapus semua data']);
+    }
     public function destroy(Request $request)
     {
         $request->validate([
@@ -162,7 +176,13 @@ class LogsController extends Controller
             'error' => $error,
             'totalRecords' => $totalRecords,
             'perPage' => $perPage,
+            'deviceId'=>$device->id,
         ]);
+    }
+    public function exportAll($deviceId){
+        return Excel::download(
+            new SensorDataExport($deviceId, null, null),
+            'all_sensor_data.xlsx');
     }
 
     public function export(Request $request)

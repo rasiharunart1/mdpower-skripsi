@@ -108,4 +108,5 @@ class SensorDataExport implements FromQuery, WithHeadings, WithMapping, WithColu
             'N' => NumberFormat::FORMAT_NUMBER,
         ];
     }
+    
 }

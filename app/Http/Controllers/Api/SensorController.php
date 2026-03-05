@@ -6,11 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Device;
 use App\Models\SensorData;
 use App\Models\SensorDataStill;
-
+use Carbon\Carbon;
 use App\Models\SensorRange;
 use App\Models\ServerSensorData;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
+// use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class SensorController extends Controller
@@ -90,18 +90,47 @@ class SensorController extends Controller
         ['device_id' => $device->id],
         $data
     );
-
-        $historyInterval = 5*60; // detik (bisa diubah sesuai kebutuhan)
-        $cacheKey = "sensor_last_history_{$device->id}";
-
+        if (!$deviceSettings || !$deviceSettings->interval_record) {
+            return response()->json([
+                'message' => 'Interval record belum disetting',
+                'history_created' => false
+            ], 200);
+        }
+    
+        $interval = (int) $deviceSettings->interval_record;
+        $now = Carbon::now();
         $shouldCreateHistory = false;
-        $lastHistoryTime = Cache::get($cacheKey);
-
-        if (!$lastHistoryTime || (time() - $lastHistoryTime) >= $historyInterval) {
+        $sensorData = null;
+        
+        $updated = Device::where('id', $device->id)
+            ->where(function ($query) use ($interval, $now) {
+                $query->whereNull('last_history_at')
+                      ->orWhere(
+                          'last_history_at',
+                          '<=',
+                          $now->copy()->subSeconds($interval)
+                      );
+            })
+            ->update([
+                'last_history_at' => $now
+            ]);
+        
+        if ($updated) {
             $sensorData = SensorData::create($data);
-            Cache::put($cacheKey, time(), $historyInterval * 2);
             $shouldCreateHistory = true;
         }
+        
+        // $historyInterval = 5*60; // detik (bisa diubah sesuai kebutuhan)
+        // $cacheKey = "sensor_last_history_{$device->id}";
+
+        // $shouldCreateHistory = false;
+        // $lastHistoryTime = Cache::get($cacheKey);
+
+        // if (!$lastHistoryTime || (time() - $lastHistoryTime) >= $historyInterval) {
+        //     $sensorData = SensorData::create($data);
+        //     Cache::put($cacheKey, time(), $historyInterval * 2);
+        //     $shouldCreateHistory = true;
+        // }
 
         return response()->json([
             'message' => 'Sensor data processed successfully',
@@ -121,7 +150,7 @@ public function getSensorData($deviceCode)
 
         $sensorData = $device->SensorDataStill()->latest()->first();
 
-        if(!$sensorData){
+        if($rangeSensor->isEmpty()){
             return response()->json([
                 'success'=> false,
                 'message'=> 'Data sensor tidak ditemukan untuk device ini'
@@ -175,7 +204,7 @@ public function getSensorData($deviceCode)
 
         $sensorData = $device->SensorData()->get();
 
-        if(!$sensorData){
+        if($rangeSensor->isEmpty()){
             return response()->json([
                 'success'=> false,
                 'message'=> 'Data sensor tidak ditemukan untuk device ini'

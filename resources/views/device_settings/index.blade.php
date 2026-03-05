@@ -51,6 +51,11 @@
                 <input type="number" step="0.01" name="hysteresis"
                     value="{{ old('hysteresis', $settings->hysteresis) }}" class="form-control" required>
             </div>
+            <div class="form-group">
+                <label>Interval Record Logging</label>
+                <input type="number" step="1" name="interval_record"
+                    value="{{ old('interval_record', $settings->interval_record) }}" class="form-control" required>
+            </div>
 
 
             <button type="submit" class="btn btn-primary">Simpan</button>
@@ -69,8 +74,9 @@
             var temp1 = $('input[name="temp1_threshold"]').val();
             var temp2 = $('input[name="temp2_threshold"]').val();
             var hysteresis = $('input[name="hysteresis"]').val();
+            var intervalRecord = $('input[name="inter"]').val();
 
-            if (!temp1 || !temp2 || !hysteresis) {
+            if (!temp1 || !temp2 || !hysteresis|| !intervalRecord) {
                 alert('Threshold suhu dan hysteresis harus diisi');
                 e.preventDefault();
                 return false;
